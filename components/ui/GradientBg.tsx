@@ -40,6 +40,7 @@ export const BackgroundGradientAnimation = ({
   const [tgX, setTgX] = useState(0);
   const [tgY, setTgY] = useState(0);
   useEffect(() => {
+    if (typeof document === "undefined") return;
     document.body.style.setProperty(
       "--gradient-background-start",
       gradientBackgroundStart
@@ -59,18 +60,20 @@ export const BackgroundGradientAnimation = ({
   }, []);
 
   useEffect(() => {
-    function move() {
-      if (!interactiveRef.current) {
-        return;
-      }
-      setCurX(curX + (tgX - curX) / 20);
-      setCurY(curY + (tgY - curY) / 20);
+    let animationFrame: number;
+
+    const animate = () => {
+      if (!interactiveRef.current) return;
+      setCurX((prev) => prev + (tgX - prev) / 20);
+      setCurY((prev) => prev + (tgY - prev) / 20);
       interactiveRef.current.style.transform = `translate(${Math.round(
         curX
       )}px, ${Math.round(curY)}px)`;
-    }
+      animationFrame = requestAnimationFrame(animate);
+    };
 
-    move();
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
   }, [tgX, tgY]);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
